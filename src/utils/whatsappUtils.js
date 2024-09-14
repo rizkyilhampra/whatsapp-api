@@ -10,7 +10,6 @@ export async function connectToWhatsApp() {
   const { state, saveCreds } = await useMultiFileAuthState("auth_info_baileys");
 
   sock = makeWASocket.makeWASocket({
-    version: [2, 2413, 1],
     auth: state,
     printQRInTerminal: true,
   });
