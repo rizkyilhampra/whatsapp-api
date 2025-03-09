@@ -55,8 +55,10 @@ export async function sendMessageToGroup(groupId, message) {
   if (!sock) {
     await connectToWhatsApp();
   }
-  if (!groupId.includes("@s.whatsapp.net")) {
-    groupId = `${groupId}@s.whatsapp.net`;
+
+  const domain = "g.us";
+  if (!groupId.includes(`@${domain}`)) {
+    groupId = `${groupId}@${domain}`;
   }
 
   await sock.sendMessage(groupId, { text: message });
