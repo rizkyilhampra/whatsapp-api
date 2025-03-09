@@ -64,15 +64,46 @@ export async function sendMessageToGroup(groupId, message) {
   await sock.sendMessage(groupId, { text: message });
 }
 
-export async function getGroupIds() {
+export async function getGroupIds(sort = "creation", order = "desc") {
+  const validSorts = new Set([
+    "creation",
+    "subject",
+    "subjectOwner",
+    "subjectTime",
+    "size",
+  ]);
+  const validOrders = new Set(["asc", "desc"]);
+
+  const normalizedSort = validSorts.has(sort) ? sort : "creation";
+  const normalizedOrder = validOrders.has(order) ? order : "desc";
+
   if (!sock) {
     await connectToWhatsApp();
   }
-  const chats = await sock.chats.all();
-  const groupChats = chats.filter((chat) => chat.id.endsWith("@g.us"));
-  const groupIds = groupChats.map((chat) => chat.id);
 
-  return groupIds;
+  const groupMetadata = await sock.groupFetchAllParticipating();
+  const groups = Object.entries(groupMetadata).map(([id, meta]) => ({
+    id,
+    ...meta,
+    creationDate: new Date(meta.creation),
+    subjectTimeDate: new Date(meta.subjectTime),
+  }));
+
+  const sortConfig = {
+    creation: (a, b) => a.creationDate - b.creationDate,
+    subject: (a, b) => (a.subject || "").localeCompare(b.subject || ""),
+    subjectOwner: (a, b) =>
+      (a.subjectOwner || "").localeCompare(b.subjectOwner || ""),
+    subjectTime: (a, b) => a.subjectTimeDate - b.subjectTimeDate,
+    size: (a, b) => a.size - b.size,
+  };
+
+  return groups
+    .sort((a, b) => {
+      const comparison = sortConfig[normalizedSort](a, b);
+      return normalizedOrder === "asc" ? comparison : -comparison;
+    })
+    .map(({ creationDate, subjectTimeDate, ...group }) => group);
 }
 
 connectToWhatsApp();
