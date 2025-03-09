@@ -2,6 +2,15 @@
 ## Description
 An REST API using Node & Express. This API is only used to send message to Whatsapp using [Baileys](https://github.com/WhiskeySockets/Baileys) socket.
 
+## Installation
+```bash
+npm install
+```
+
+```bash
+npm run start
+```
+
 ## Usage
 1. Send message
     ```bash
