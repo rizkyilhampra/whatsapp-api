@@ -13,3 +13,14 @@ An REST API using Node & Express. This API is only used to send message to Whats
         "message": "Hello from API!"
       }'
     ```
+
+2. Send message to group
+    ```bash
+    curl -X POST \
+      http://localhost:3000/api/whatsapp/send-message-to-group \
+      -H 'Content-Type: application/json' \
+      -d '{
+        "groupId": "<<<number>@g.us> or <number>>",
+        "message": "Hello from API!",
+      }'
+    ```

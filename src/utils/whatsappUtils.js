@@ -51,4 +51,15 @@ export async function sendMessage(number, message) {
   await sock.sendMessage(phoneNumber, { text: message });
 }
 
+export async function sendMessageToGroup(groupId, message) {
+  if (!sock) {
+    await connectToWhatsApp();
+  }
+  if (!groupId.includes("@s.whatsapp.net")) {
+    groupId = `${groupId}@s.whatsapp.net`;
+  }
+
+  await sock.sendMessage(groupId, { text: message });
+}
+
 connectToWhatsApp();
