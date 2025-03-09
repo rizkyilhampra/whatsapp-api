@@ -64,4 +64,15 @@ export async function sendMessageToGroup(groupId, message) {
   await sock.sendMessage(groupId, { text: message });
 }
 
+export async function getGroupIds() {
+  if (!sock) {
+    await connectToWhatsApp();
+  }
+  const chats = await sock.chats.all();
+  const groupChats = chats.filter((chat) => chat.id.endsWith("@g.us"));
+  const groupIds = groupChats.map((chat) => chat.id);
+
+  return groupIds;
+}
+
 connectToWhatsApp();

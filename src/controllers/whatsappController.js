@@ -1,4 +1,8 @@
-import { sendMessage, sendMessageToGroup } from "../utils/whatsappUtils.js";
+import {
+  getGroupIds,
+  sendMessage,
+  sendMessageToGroup,
+} from "../utils/whatsappUtils.js";
 
 export const sendWhatsAppMessage = async (req, res) => {
   try {
@@ -31,3 +35,13 @@ export const sendWhatsAppMessageToGroup = async (req, res) => {
     res.status(500).json({ error: "Failed to send message to group" });
   }
 };
+
+export async function getWhatsAppGroupIds(req, res) {
+  try {
+    const groupIds = await getGroupIds();
+    res.status(200).json({ groupIds });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to get group IDs" });
+  }
+}

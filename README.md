@@ -33,3 +33,9 @@ npm run start
         "message": "Hello from API!",
       }'
     ```
+
+3. Get group IDs
+    ```bash
+    curl -X GET \
+      http://localhost:3000/api/whatsapp/get-group-ids
+    ```
