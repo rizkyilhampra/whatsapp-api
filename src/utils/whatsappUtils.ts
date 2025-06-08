@@ -1,32 +1,39 @@
-import makeWASocket, {
+import makeWASocketDefault, {
   DisconnectReason,
   useMultiFileAuthState,
+  WASocket,
+  GroupMetadata,
+  ConnectionState,
 } from "@whiskeysockets/baileys";
 import { Boom } from "@hapi/boom";
+import QRCode from "qrcode";
 
-let sock;
+let sock: WASocket;
 
 export async function connectToWhatsApp() {
   const { state, saveCreds } = await useMultiFileAuthState("auth_info_baileys");
 
-  sock = makeWASocket.makeWASocket({
+  sock = makeWASocketDefault({
     auth: state,
-    printQRInTerminal: true,
   });
 
-  sock.ev.on("connection.update", (update) => {
-    const { connection, lastDisconnect } = update;
+  sock.ev.on("connection.update", async (update: Partial<ConnectionState>) => {
+    const { connection, lastDisconnect, qr } = update;
+
+    if (qr) {
+      console.log(await QRCode.toString(qr, { type: "terminal", small: true }));
+    }
 
     if (connection === "close") {
       const shouldReconnect =
-        lastDisconnect.error instanceof Boom
-          ? lastDisconnect?.error?.output?.statusCode !==
+        lastDisconnect && lastDisconnect.error instanceof Boom
+          ? lastDisconnect.error.output?.statusCode !==
             DisconnectReason.loggedOut
           : false;
 
       console.log(
         "connection closed due to ",
-        lastDisconnect.error,
+        lastDisconnect?.error,
         ", reconnecting ",
         shouldReconnect,
       );
@@ -42,7 +49,7 @@ export async function connectToWhatsApp() {
   sock.ev.on("creds.update", saveCreds);
 }
 
-export async function sendMessage(number, message) {
+export async function sendMessage(number: string, message: string) {
   if (!sock) {
     await connectToWhatsApp();
   }
@@ -51,7 +58,7 @@ export async function sendMessage(number, message) {
   await sock.sendMessage(phoneNumber, { text: message });
 }
 
-export async function sendMessageToGroup(groupId, message) {
+export async function sendMessageToGroup(groupId: string, message: string) {
   if (!sock) {
     await connectToWhatsApp();
   }
@@ -74,7 +81,9 @@ export async function getGroupIds(sort = "creation", order = "desc") {
   ]);
   const validOrders = new Set(["asc", "desc"]);
 
-  const normalizedSort = validSorts.has(sort) ? sort : "creation";
+  const normalizedSort = (
+    validSorts.has(sort) ? sort : "creation"
+  ) as keyof typeof sortConfig;
   const normalizedOrder = validOrders.has(order) ? order : "desc";
 
   if (!sock) {
@@ -82,24 +91,36 @@ export async function getGroupIds(sort = "creation", order = "desc") {
   }
 
   const groupMetadata = await sock.groupFetchAllParticipating();
-  const groups = Object.entries(groupMetadata).map(([id, meta]) => ({
-    id,
-    ...meta,
-    creationDate: new Date(meta.creation),
-    subjectTimeDate: new Date(meta.subjectTime),
-  }));
+
+  type ProcessedGroup = GroupMetadata & {
+    creationDate: Date;
+    subjectTimeDate: Date;
+  };
+
+  const groups: ProcessedGroup[] = Object.entries(groupMetadata).map(
+    ([groupIdString, meta]: [string, GroupMetadata]) => ({
+      ...meta,
+      id: groupIdString,
+      creationDate: new Date(meta.creation!),
+      subjectTimeDate: new Date(meta.subjectTime!),
+    }),
+  );
 
   const sortConfig = {
-    creation: (a, b) => a.creationDate - b.creationDate,
-    subject: (a, b) => (a.subject || "").localeCompare(b.subject || ""),
-    subjectOwner: (a, b) =>
+    creation: (a: ProcessedGroup, b: ProcessedGroup) =>
+      a.creationDate.getTime() - b.creationDate.getTime(),
+    subject: (a: ProcessedGroup, b: ProcessedGroup) =>
+      (a.subject || "").localeCompare(b.subject || ""),
+    subjectOwner: (a: ProcessedGroup, b: ProcessedGroup) =>
       (a.subjectOwner || "").localeCompare(b.subjectOwner || ""),
-    subjectTime: (a, b) => a.subjectTimeDate - b.subjectTimeDate,
-    size: (a, b) => a.size - b.size,
+    subjectTime: (a: ProcessedGroup, b: ProcessedGroup) =>
+      a.subjectTimeDate.getTime() - b.subjectTimeDate.getTime(),
+    size: (a: ProcessedGroup, b: ProcessedGroup) =>
+      (a.size || 0) - (b.size || 0),
   };
 
   return groups
-    .sort((a, b) => {
+    .sort((a: ProcessedGroup, b: ProcessedGroup) => {
       const comparison = sortConfig[normalizedSort](a, b);
       return normalizedOrder === "asc" ? comparison : -comparison;
     })

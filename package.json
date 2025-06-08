@@ -1,25 +1,38 @@
 {
   "name": "whatsapp-api",
   "version": "1.0.0",
-  "type": "module",
   "description": "An REST API using Node & Express. This API is only used to send message to Whatsapp using Baileys socket.",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/index.js"
+    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts",
+    "build": "tsc",
+    "start": "npm run build && node dist/index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@hapi/boom": "^10.0.1",
-    "@whiskeysockets/baileys": "^6.7.7",
+    "@whiskeysockets/baileys": "^6.7.18",
     "body-parser": "^1.20.3",
-    "express": "^4.21.0",
-    "link-preview-js": "^3.0.5",
+    "express": "^4.21.2",
+    "link-preview-js": "^3.1.0",
     "morgan": "^1.10.0",
-    "qrcode-terminal": "^0.12.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/body-parser": "^1.19.6",
+    "@types/express": "^5.0.3",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^22.15.30",
+    "@types/qrcode": "^1.5.5",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+    "nodemon": "^3.1.10",
+    "qrcode": "^1.5.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
   }
 }

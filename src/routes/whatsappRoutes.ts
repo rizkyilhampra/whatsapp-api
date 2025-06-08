@@ -3,7 +3,7 @@ import {
   getWhatsAppGroupIds,
   sendWhatsAppMessage,
   sendWhatsAppMessageToGroup,
-} from "../controllers/whatsappController.js";
+} from "../controllers/whatsappController";
 
 const router = express.Router();
 

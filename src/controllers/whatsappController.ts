@@ -1,14 +1,16 @@
+import { Request, Response } from "express";
 import {
   getGroupIds,
   sendMessage,
   sendMessageToGroup,
-} from "../utils/whatsappUtils.js";
+} from "../utils/whatsappUtils";
 
-export const sendWhatsAppMessage = async (req, res) => {
+export async function sendWhatsAppMessage(req: Request, res: Response) {
   try {
     const { number, message } = req.body;
     if (!number || !message) {
-      return res.status(400).json({ error: "Number and message are required" });
+      res.status(400).json({ error: "Number and message are required" });
+      return;
     }
 
     await sendMessage(number, message);
@@ -17,15 +19,16 @@ export const sendWhatsAppMessage = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: "Failed to send message" });
   }
-};
+}
 
-export const sendWhatsAppMessageToGroup = async (req, res) => {
+export async function sendWhatsAppMessageToGroup(req: Request, res: Response) {
   try {
     const { groupId, message } = req.body;
     if (!groupId || !message) {
-      return res
+      res
         .status(400)
         .json({ error: "Group ID and message are required" });
+      return;
     }
 
     await sendMessageToGroup(groupId, message);
@@ -36,7 +39,7 @@ export const sendWhatsAppMessageToGroup = async (req, res) => {
   }
 };
 
-export async function getWhatsAppGroupIds(req, res) {
+export async function getWhatsAppGroupIds(_req: Request, res: Response) {
   try {
     const groupIds = await getGroupIds();
     res.status(200).json({ groupIds });

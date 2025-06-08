@@ -1,15 +1,15 @@
 import express from "express";
 import bodyParser from "body-parser";
-import whatsappRoutes from "./routes/whatsappRoutes.js";
+import whatsappRoutes from "./routes/whatsappRoutes";
 import morgan from "morgan";
 import fs from "fs";
 import path from "path";
 import swaggerUi from "swagger-ui-express";
-import swaggerSpec from "./swaggerConfig.js";
+import swaggerSpec from "./swaggerConfig";
 
 const app = express();
 
-const logDirectory = path.join(process.cwd(), "var", "log");
+const logDirectory = path.join(process.cwd(), "logs");
 fs.mkdirSync(logDirectory, { recursive: true });
 
 const accessLogStream = fs.createWriteStream(
@@ -18,13 +18,8 @@ const accessLogStream = fs.createWriteStream(
 );
 
 app.use(bodyParser.json());
+app.use("/", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use("/api/whatsapp", whatsappRoutes);
 app.use(morgan("combined", { stream: accessLogStream }));
-
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
-app.get("/", (_req, res) => {
-  res.send("WhatsApp API is running!");
-});
 
 export default app;
