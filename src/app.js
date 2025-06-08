@@ -4,6 +4,8 @@ import whatsappRoutes from "./routes/whatsappRoutes.js";
 import morgan from "morgan";
 import fs from "fs";
 import path from "path";
+import swaggerUi from 'swagger-ui-express';
+import swaggerSpec from './swaggerConfig.js';
 
 const app = express();
 
@@ -18,5 +20,13 @@ const accessLogStream = fs.createWriteStream(
 app.use(bodyParser.json());
 app.use("/api/whatsapp", whatsappRoutes);
 app.use(morgan("combined", { stream: accessLogStream }));
+
+// Swagger UI setup
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
+// Basic route for testing
+app.get('/', (req, res) => {
+  res.send('WhatsApp API is running!');
+});
 
 export default app;
