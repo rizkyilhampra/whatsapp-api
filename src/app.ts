@@ -1,11 +1,11 @@
 import express from "express";
 import bodyParser from "body-parser";
-import whatsappRoutes from "./routes/whatsappRoutes.js";
+import whatsappRoutes from "./routes/whatsappRoutes";
 import morgan from "morgan";
 import fs from "fs";
 import path from "path";
 import swaggerUi from "swagger-ui-express";
-import swaggerSpec from "./swaggerConfig.js";
+import swaggerSpec from "./swaggerConfig";
 
 const app = express();
 
